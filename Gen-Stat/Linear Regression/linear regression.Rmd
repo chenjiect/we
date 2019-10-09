@@ -1,256 +1,462 @@
 ---
-title: "linear regression"
+title: "线性回归"
+author: "杨钰萍2017级, 张志伟2019级，陈洁2019级"
 output: html_document
----
-
-> 文件创建：杨钰萍 2017级   2017年秋
----
-
-#第二讲 线性回归
-
-##1 前言
-
-下面不详述违反各项经典假设的原因及可能造成的后果，请参见计量经济学或者其它相关书籍
-
-关于偏残差系数的数理意义请参考：赵松山《关于偏残差系数的讨论》，在这里不展开讨论
 
 ---
 
-##2 线性回归
 
-###2.1 简单线性回归
+*latex语法 https://blog.csdn.net/u014630987/article/details/70156489*
 
-```{r warning=FALSE}
-#Boston数据集在MASS包里面
-library(MASS)
+
+# 第三章 线性回归
+
+$\quad$
+
+## 3.1简单线性回归
+
+$\quad$
+
+* 一元线性回归模型：$y=\beta_0+\beta_1x+\varepsilon$
+
+$\quad$
+
+* 一元线性回归方程：$\hat y=\hat \beta_0+\hat \beta_1x$
+
+$\quad$
+
+### 3.1.1估计系数
+
+$\quad$
+
+用最小二乘法估计$\beta_0$和$\beta_1$时使残差平方和RSS达到最小,$RSS=\sum_{i=1}^n(y_i-\hat y_i)^2$ ,使RSS最小的参数估计值为:
+
+$$
+\begin{aligned}
+\hat \beta_1 =\frac{\sum\limits_{i=1}^n(x_i-\bar x)(y_i-\bar y)}{\sum\limits_{i=1}^n(x_i-\bar x)^2}\qquad
+\hat \beta_0 = \bar y - \hat \beta_1\bar x
+\end{aligned}
+$$
+
+
+### 3.1.2评价回归系数的显著性
+
+$\quad$
+
+1. 建立原假设和备择假设，$H_0:\beta_1 = 0 \ 和 \ H_1:\beta \not=0$
+
+
+2. 计算t统计量的值，$t=\frac{\hat \beta_1-0}{SE(\beta_1)}$
+
+3. 根据t统计量的值计算p值
+
+* 一般地，用X 表示检验的统计量，当H0为真时，可由样本数据计算出该统计量的值C，根据检验统计量X的具体分布，可求出p值。具体地说：
+
+* 左侧检验的p值为检验统计量X 小于样本统计值C 的概率，即：P = P{ X < C}
+
+* 右侧检验的p值为检验统计量X 大于样本统计值C 的概率：P = P{ X > C}
+
+* 双侧检验的p值为检验统计量X 落在样本统计值C 为端点的尾部区域内的概率的2 倍：P = 2P{ X > C} (当C位于分布曲线的右端时) 或P = 2P{ X< C}(当C位于分布曲线的左端时) 。若X 服从正态分布和t分布，其分布曲线是关于纵轴对称的，故其p值可表示为P = P{| X| > C} 。
+
+4. 选择显著性水平，与p值相比较，若显著性水平取0.05，当p值小于0.05则拒绝原假设，认为响应变量与预测变量有关.
+
+* 根据$\hat \beta_1$的标准误差，可以计算$\hat \beta_1$的置信区间，$\bigg[\hat \beta_1-2\cdot SE(\hat \beta_1),\hat \beta_1+2\cdot SE(\hat \beta_1)\bigg]$，$SE(\hat \beta_1)^2 = \frac{\sigma^2}{\sum\limits_{i=1}^n(x_i-\bar x)}$
+
+
+### 3.1.3评价模型的准确性
+
+$\quad$
+
+* 判断模型拟合程度的常用相关量有：残差标准误和R^2统计量。
+
+* RSE越小说明模型拟合程度越好。R^2越大说明模型的拟合程度越好
+
+
+| 类别|公式 |DF |MS |
+|---:|:----|:----|:-----|
+|   TSS|$\sum_{i=1}^n(y_i-\bar y)^2$  |n-1   |$\frac{\sum_{i=1}^n(y_i-\bar y)^2}{n-1}$   |
+|   Reg|$\sum_{i=1}^n(\hat y_i-\bar y)^2$    |n-p   |$\frac{ \sum_{i=1}^n(\hat y_i-\bar  y)^2}{n-p}$|
+|   RSS|$\sum_{i=1}^n(y_i-\hat y_i)^2$  |n-p-1   |$\frac{\sum_{i=1}^n(y_i-\hat y_i)^2 }{n-p-1}$ |
+
+
+
+$$
+\begin{aligned}
+&RSE = \sqrt{\frac{1}{n-2}RSS}。\\
+\\
+&R^2 = \frac{TSS-RSS}{TSS}=1-\frac{RSS}{TSS}。\\
+\\
+&r=Cor(x,y)=\frac{\sum\limits_{i=1}^n(x_i-\bar x)(y_i-\bar y)}{\sqrt{\sum\limits_{i=1}^n(x_i-\bar x)^2}\sqrt{\sum\limits_{i=1}^n(y_i-\bar y)^2}}
+&r^2=R^2。  \\
+\\
+\end{aligned}
+$$
+
+
+
+
+
+```{r,echo=TRUE,warning=FALSE}
+library(MASS)#Boston数据集在MASS包里面
 #fix(Boston)  #看一下Boston是一张怎样的数据表
 #names(Boston)#看一下Boston数据表中的各个变量名称
-
 #用lm.fit2.1 <-lm(medv ~ lstat, data = Boston)可以得到跟以下两句同样的结果
 attach(Boston)
-lm.fit2.1 <- lm(medv ~ lstat) #得到线性回归函数
-
-lm.fit2.1 #系数
+lm.fit2.1 <- lm(medv ~ lstat) #得到线性回归方程
 summary(lm.fit2.1) #查看置信区间，p值，标准误，R^2，F统计量
+confint(lm.fit2.1,level = 0.95)#回归系数95%的置信区间
 ```
 
-**结果解读：**星号个数表示显著性的强弱，“*”越多表示显著性越强
 
-```{r warning=FALSE}
-confint(lm.fit2.1) #得到系数估计值的置信区间
-predict(lm.fit2.1, data.frame(lstat = (c(2, 6, 9))), interval = "confidence") #用lstat预测medv得到的置信区间
-predict(lm.fit2.1, data.frame(lstat = (c(2, 6, 9))), interval = "prediction") #用lstat预测medv得到的预测区间
 
-#画出函数拟合图
-plot(lstat, medv, col="blue")
-abline(lm.fit2.1, lwd = 3, col = "red")
 
+$\quad$
+
+##  3.2多元线性回归
+
+$\quad$
+
+* 多元线性回归模型：$y=\beta_0+\beta_1x+ \beta_2x_2+\dots+ \beta_px_p+\varepsilon\\$
+$\quad$
+* 多元线性回归方程：$\hat y=\hat \beta_0+\hat \beta_1x_1+\hat \beta_1x_2\dots+\hat \beta_px_p$
+
+$\quad$
+
+###  3.2.1估计回归系数（与一元线性回归相似）
+
+$\quad$
+
+```{r,echo=TRUE,warning=FALSE}
+
+lm.fit2.2.3 <- lm(medv ~ . - age, data = Boston)
+lm.fit2.2.3 
 ```
 
-**注意：**lm（应变量~自变量），plot（自变量，应变量），abline()不能单独使用，上面必有一行画图的命令
+$\quad$
 
 
-###2.2 多元线性回归
+###  3.2.2评价模型是否显著
 
 
-```{r warning=F}
+$\quad$
+
+1. 建立原假设和备则假设，$H_0:\beta_1 =\beta_2=\dots=\beta_p= 0 \ 和 \ H_1:至少有一个\beta_j \not=0$
+
+2. 计算F统计量的值，$F=\frac{(TSS-RSS)/p}{RSS/(n-p-1)}$
+
+3. 根据F统计量计算P值。也可以计算F统计量的值，如果线性回归假设是正确的，$E\{RSS/(n-p-1)\}=\sigma^2$，进一步若$H_0$为真，则有$E\{(TSS-RSS)/P\}=\sigma^2$。因此，当响应变量与预测变量无关，F统计量应该接近1。另一方面，$H_1$为真，预计F大于1，如果n很大，即使统计量只是略大于1，可能也仍然提供了拒绝$H_0$的证据，相反，若n很小，则需要较大的F统计量才能拒绝$H_0$。
+
+4. 选择显著性水平，与P值相比较，若显著性水平取0.05，当P值小于0.05则拒绝原假设，认为至少有一个响应变量与预测变量有关。
+
+5. 除此之外，若我们想要检验系数的特定子集为0，比如$H_0：\beta_{p-q+1}=\beta_{p-q+2}=\dots=\beta_p=0$,此时F统计量变为，$F=\frac{(RSS_0-RSS)/q}{RSS/(n-p-1)}$  $RSS_0$为除q个变量之外的所有变量建立模型的残差平方。
+
+$\quad$
+
+### 3.2.3选定重要变量
+
+$\quad$
+
+
+逐步回归法（向前逐步回归，向后逐步回归，向前向后逐步回归）:
+
++ 向前选择 (forward selection) 。我们从零模型(null model)-只含有截距但不含预测变量开始。然后建立简单线性回归模型，并把使 RSS 最小的变量添加到零模型中。然后再加入一个新变量，得到新的双变量模型，加人的变量是使新模型的 RSS最小的变量。这一过程持续到满足某种停止规则为止。
+
++ 向后选择 (backward selection) 。我们先从包含所有变量的模型开始，并删除 p值最大的变量-统计学上最不显著的变量。拟合完包含 (p-1)个变量的新模型后，再删p值最大的变量。此过程持续到满足某种停止规则为止。例如，当所有剩余变量的p值均低于某个阈值时，我们会停止删除变量。
+
++ 混合选择 (mixed selection)。这是对向前选择和向后选择的综合。与向前选择相同，我们从不含变量的模型开始，向模型中添加拟合最好的变量，然后依次增加变量。当然，正如我们在 Advertising(广告)例子中看到的，向模型中加入新的预测变量后，已有变量的p值可能会变大。因此，一旦模型中的某个变量的p值超过一定的阔值时，就从模型中删除该变量。我们不断执行这些向前或向后的步骤，直到模型中所有变量的p值都足够低，且模型外的任何变量加入模型后都将有较大的p值。
+
+```{r,echo=TRUE,warning=FALSE}
+lm.fit2.2.3 <- lm(medv ~ . - age, data = Boston) #medv关于除了age以外的所有变量的回归模型
+step(lm.fit2.2.3,direction="backward")
+```
+
+
+$\quad$
+
+
+评价模型的质量的指标主要有：赤池信息量准则AIC，贝叶斯信息准则BIC和调整R^2
+
+
+为在模型中，增加多个变量，即使事实上无关的变量，也会小幅度条R平方的值，为了排除变量数目的影响计算调整$R^2$,$$adjusted \ R^2 = 1- \frac{(RSS/（n-p-1))}{(TSS/(n-1))}$$
+
+```{r warning=F,echo=TRUE}
 lm.fit2.2.1 <- lm(medv ~ lstat + age, data = Boston) #medv关于lstat和age的回归模型
 summary(lm.fit2.2.1)
-lm.fit2.2.2 <- lm(medv ~ ., data = Boston) #medv关于所有变量的回归模型
-summary(lm.fit2.2.2)
-lm.fit2.2.3 <- lm(medv ~ . - age, data = Boston) #medv关于除了age以外的所有变量的回归模型
-summary(lm.fit2.2.3)
-#用summary(lm(medv ~ lstat + age + lstat : age, data = Boston))可以得到跟以下语句一样的结果
-summary(lm(medv ~ lstat+age, data = Boston)) #包含了lstat，age和lstat与age的交互项
-
-#如果要把二次项引入线性回归 ，要用I()，不能用lstat^2， 因为 "^" 表示交互项达到某一个次数，或者用下面的函数
-lm.fit2.2.4 <- lm(medv ~ poly(lstat, 5)) #把lstat的一阶二阶至五阶全部写进去了
-summary(lm.fit2.2.4)
-
-```
-**注意：**如果自变量里面有定性变量，R会自动创建虚拟变量
-
-###2.3 选择“最佳模型”
-
-选择最佳模型跟自变量的选取可以放在一起，选择最佳模型是对已有模型去进行比较，然后选自变量相当于是还在建模，但都有关于要不要把某一个自变量引进来的问题
-
-但是一个模型好不好，主要看拟合的怎么样或者预测能力如何，根据模型不同的用途有不同的标准，以及可能会出现某两个检测方法得出不同结论的情况，这个需要从R^2等多种信息量准则去综合判断
-
-**方法1：anova检验**（这个函数可以比较两个嵌套模型的拟合优度）（（必须要是**嵌套模型**））
-
-```{r , echo=TRUE,warning=FALSE}
-#以下比较模型2.2.3与2.2.2
-anova(lm.fit2.2.3, lm.fit2.2.2)
-
-```
-**结果解读：**这里第一个模型嵌套在第二个模型中，结果显示，p值为0.96，意味着检验不显著，即不拒绝原假设，也就是不需要把age引入线性模型中。
-
-**方法2：用赤池信息量准则（AIC）**((寻找可以最好地解释数据但包含最少自由参数的模型))(((没有嵌套模型的要求)))
-
-```{r,echo=TRUE}
-AIC(lm.fit2.2.3, lm.fit2.2.2)
-
 ```
 
-**结果解读：**这里表明lm.fit2.2.3更好，跟上面用ANOVA的结果一样
 
-通过变量选择从大量的候选变量里面得到最终的自变量（较为流行以下两种）（（CH6的内容，下次再说））
 
-**方法3：逐步回归法**（未展开）
 
-**方法4：全子集回归**（未展开）
+AIC是衡量统计模型拟合优良性的一种标准，由日本统计学家赤池弘次在1974年提出，它建立在熵的概念上，提供了权衡估计模型复杂度和拟合数据优良性的标准。
+$$AIC=2k-2ln(L)$$
 
----
-##3 判断是否满足假设
+其中k是模型参数个数，L是似然函数。从一组可供选择的模型中选择最佳模型时，通常选择AIC最小的模型
 
-###3.1 总体判断
 
-**标准诊断图形**
-```{r,echo=TRUE,warning=FALSE}
-#Auto数据集在ISLR包里面
+BIC（Bayesian InformationCriterion）贝叶斯信息准则与AIC相似，用于模型选择，1978年由Schwarz提出。训练模型时，增加参数数量，也就是增加模型复杂度，会增大似然函数，但是也会导致过拟合现象，针对该问题，AIC和BIC均引入了与模型参数个数相关的惩罚项，BIC的惩罚项比AIC的大，考虑了样本数量，样本数量过多时，可有效防止模型精度过高造成的模型复杂度过高。
+$$BIC=kln(n)-2ln(L)$$
+
+其中，k为模型参数个数，n为样本数量，L为似然函数。kln(n)惩罚项在维数过大且训练样本数据相对较少的情况下，可以有效避免出现维度灾难现象。
+
+
+## 3.3回归模型中的其他注意事项
+
+$\quad$
+
+### 3.3.1定性预测变量
+
+$\quad$
+
+#### 1. 二值预测变量
+
+$\quad$
+
+* 对gender变量创建一个新变量
+$$
+\begin{aligned}
+&x_i=\left\{\begin{aligned}
+&1\quad &女性\\
+&0\quad &男性
+\end{aligned}
+\right.\\
+\end{aligned}
+$$
+* 将哑变量带入回归方程，得到以下模型:
+$$
+\begin{aligned}
+&y_i =\beta_0+\beta_1x_i+\varepsilon_i=\left\{\begin{aligned}
+&\beta_0+\beta_1+\varepsilon_i\quad &女性\\
+&\beta_0 + \varepsilon_i\quad &男性
+\end{aligned}
+\right.
+\end{aligned}
+$$
+
+* 除了0/1编码，我们还可以创建如下效应编码：
+$$
+\begin{aligned}
+&x_i=\left\{\begin{aligned}
+&1\quad &女性\\
+&-1\quad &男性
+\end{aligned}
+\right.\\
+\end{aligned}
+$$
+* 将效应编码带入回归方程，得到以下模型:
+$$
+\begin{aligned}
+&y_i =\beta_0+\beta_1x_i+\varepsilon_i=\left\{\begin{aligned}
+&\beta_0+\beta_1+\varepsilon_i\quad &女性\\
+&\beta_0-\beta_1 + \varepsilon_i\quad &男性
+\end{aligned}
+\right.\\
+\end{aligned}
+$$
+不同编码方式的区别只在于对系数的解释不同
+
+$\quad$
+
+#### 2.定性预测变量有两个以上的水平
+
+$\quad$
+
+* 对种族变量创建两个哑变量变量
+$$
+\begin{aligned}
+&x_{i1}=\left\{\begin{aligned}
+&1\quad &亚洲人\\
+&0\quad &非亚洲人
+\end{aligned}
+\right.\\
+&x_{i2}=\left\{\begin{aligned}
+&1\quad &白种人\\
+&0\quad &非白种人
+\end{aligned}
+\right.\\
+\end{aligned}
+$$
+
+
+* 将两个哑变量带入回归方程，得到以下模型:
+$$
+\begin{aligned}
+&y_i =\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\varepsilon_i=\left\{\begin{aligned}
+&\beta_0+\beta_1+\varepsilon_i&亚洲人\\
+&\beta_0 + \beta_2+\varepsilon_i &白种人\\
+&\beta_0 + \varepsilon_i &非裔美国人
+\end{aligned}
+\right.
+\end{aligned}
+$$
+
+
+创建了两个虚拟变量ShelveLocGood，ShelveLocMedium。如果货架位置好，ShelveLocGood为1。如果货架位置中等，ShelveLocMedium为1。若货架位置差，ShelveLocGood，ShelveLocMedium都为0。
+
+
+
+```{r warning=F,echo=TRUE}
 library(ISLR)
+attach(Carseats)
+head(ShelveLoc)
+lm.fit3.3.1 <- lm(Sales~.,data = Carseats)
+summary(lm.fit3.3.1)
+contrasts(ShelveLoc)  #返回R虚拟变量的编码
+```
+
+
+
+
+
+$\quad$
+
+### 3.3.2线性模型的扩展
+
+$\quad$
+
+#### 1. 去除可加性假设
+
+
+
+$\quad$
+
+$$
+\begin{aligned}
+y &= \beta_0+\beta_1x_1+\beta_2x_2+\beta_3x_1x_2+\varepsilon\\
+&= \beta_0+(\beta_1+\beta_3x_2)x_1+\beta_2x_2+\varepsilon\\
+ &=\beta_0+\tilde\beta_1x_1+\beta_2x_2+\varepsilon\\
+ \tilde \beta_1&=\beta_1+\beta_3x_2
+\end{aligned}
+$$
+
+
+
+$x_1x_2$称为交互项,$\tilde \beta_1$随$x_2$变化，$x_1$对y的影响与$x_2$有关
+
+$\quad$
+```{r warning=F,echo=TRUE}
+library(MASS)
+lm.fit3.3.2 <- lm(medv ~ lstat + age , data = Boston)
+lm.fit3.3.2.1 <- lm(medv ~ lstat + age + lstat : age, data = Boston)
+summary(lm.fit3.3.2.1)
+AIC(lm.fit3.3.2,lm.fit3.3.2.1)
+```
+
+
+
+
+#### 2. 非线性关系(多项式回归)
+```{r warning=FALSE,echo=TRUE}
+library(car)
+lm.fit3.1.2<- lm(mpg ~ horsepower, data = Auto)
+lm.fit3.1.2.1<- lm(mpg ~ horsepower + I(horsepower ^ 2), data = Auto)
+AIC(lm.fit3.1.2,lm.fit3.1.2.1)
+```
+
+
+### 3.3.3潜在的问题
+
+$\quad$
+
+#### 1. 数据的非线性
+
+$\quad$
+
+* 线性回归模型假定预测变量和响应变量之间的关系是线性的。如果真实关系是非线性的，那么所得出的结论几乎都是不可信的。
+
+* 可以通过残差图判断数据的线性情况，左图残差呈现U形，说明数据是非线性的。如果数据确实为非线性，可以采取对预测变量进行非线性变换，
+
+* 右图是进行非线性变化的结果，残差无明显规律，说明经过非线性变换，提升了模型对数据的拟合程度。
+
+![](http://i2.tiimg.com/611786/77217243e3de9ab1.png)
+
+$\quad$
+
+
+#### 2. 违反方差齐性假设
+
+
+* 线性回归模型假定误差项的方差是恒定的，模型中的假设检验，标准误差和置信区间的计算都依赖于这一假设。
+
+* 如左图所示，残差图呈漏斗形，说明误差项方差非恒定，而且误差项的方差随响应值的增加而增加，可以采用凹函数对响应值做变换。在函数f(x)的图象上取任意两点，如果函数图象在这两点之间的部分总在连接这两点的线段的下方，那么这个函数就是凹函数。凸函数则与之相反。
+
+* 右图显示了对响应值进行变换后的残差图，可以看出异方差不明显。
+
+![](http://i2.tiimg.com/611786/f0bd6aa858ca1711.png)
+```{r,echo=TRUE,warning= FALSE}
+library(ISLR)
+attach(Auto)
 lm.fit3.1.1 <- lm(mpg ~ horsepower, data = Auto)
-par(mfrow = c(2, 2))
+par(mfrow = c(2, 2)) #界面变成2*2，放四幅图
 plot(lm.fit3.1.1)
 ```
 
-**结果解读：**左上图是**“残差与拟合图”**，用来判断线性性。该图中显示出了一个曲线关系，说明因变量与自变量不满足线性性，可能要在回归模型中加入一个二次项；右上图是**“正态Q-Q图”**，可以用来判断是否满足正态性假设。图中的点均落在呈45°角的直线上，说明满足正态性假设；左下图是**“位置尺度图”**，用来判断同方差性。该图中水平线周围的点呈随机分布，说明满足同方差性；右下图是**“残差与杠杆图”**，可以用来鉴别异常值点（可读性不佳，不展开，后面补充更好的鉴别图像）。
+* 左上图是，用来判断线性性。该图中显示出了一个曲线关系，说明因变量与自变量不满足线性性，可能要在回归模型中加入一个二次项；
+* 右上图是“正态Q-Q图”，可以用来判断是否满足正态性假设。图中的点均落在呈45°角的直线上，说明满足正态性假设；
+* 左下图是“位置尺度图”，用来判断同方差性。该图中水平线周围的点呈随机分布，说明满足同方差性；
+* 右下图是“残差与杠杆图”，可以用来鉴别异常值点(可读性不佳，不展开，后面补充更好的鉴别图像)
 
-```{r,echo=TRUE,warning=FALSE}
-#加入二次项，与原来的回归诊断图进行比较
-lm.fit3.1.2<- lm(mpg ~ horsepower + I(horsepower ^ 2), data = Auto)
-par(mfrow = c(2, 2))
-plot(lm.fit3.1.2)
-```
+* 加权最小二乘法,在每一$\varepsilon_i^2$中加入适当的权数$\omega_i$，以调整各项在平方和中的作用，对较大的$\varepsilon_i^2$赋予较小的权数，对较小的$\varepsilon_i^2$赋予较大的权数，使异方差变为同方差
 
-**结果解读：**加入二次项后，**“残差与拟合图”**趋于一条直线，说明此时满足了线性性
 
-**以下使用基础包中的state.x77数据集(这个数据集是一个矩阵)**
 
-```{r,echo=TRUE,warning=FALSE}
+#### 3. 误差项自相关
 
-states<-as.data.frame(state.x77[,c("Murder","Population","Illiteracy","Income","Frost")])#这边是为了把以矩阵形态存在的数据集变成数据框
-lm.fit3.1.3 <- lm(Murder ~ ., data = states)
-par(mfrow = c(2, 2))
-plot(lm.fit3.1.3)
-```
+* 线性回归模型假定误差项是不相关的，回归系数和拟合值的标准误都基于这个假设。
 
-**基于gvlma包**
+* 误差项之间的相关系数越大，相邻的残差越可能有相似的值。 
 
-```{r,echo=TRUE,warning=FALSE}
-library(gvlma)
-gvmodel <- gvlma(lm.fit3.1.3)
-summary(gvmodel)
-```
 
-**结果解读：**输出的结果除了summary(lm.fit3.1.3)的内容外，最后五行值得注意。它不仅给出了综合检验结果（Global Stat），还给出了偏度，峰度，异方差性的评价。当然输出结果表示，数据满足OLS回归模型的各项所有统计假设（Assumptions acceptable）
 
-###3.2 自相关性
+
+![](http://i2.tiimg.com/611786/e0a41191c24621aa.png)
+
+
+
+DW检验是以普通最小二乘法回归并对回归余项的线性独立性假设进行的检验，即序列的自相关检验。其优点在于能直接根据估计的残差计算，简便快捷：
+$$
+D.W.=\frac{\sum\limits_{t=2}^n{e_t}^2+\sum\limits_{t=2}^n{e_{t-1}}^2-2\sum\limits_{t=2}^n{e_t}e_{t-1}}{\sum\limits_{t=1}^n{e_t}^2}
+$$
+
+
+当n较大时，$\sum\limits_{t=2}^n{e_t}^2,\sum\limits_{t=2}^n{e_{t-1}}^2,\sum\limits_{t=1}^n{e_t}^2$大致相等，则D.W.可简化为
+
+
+$$
+D.W.\approx 2(1-\frac{\sum\limits_{t=2}^n{e_t}{e_{t-1}}}{\sum\limits_{t=1}^n{e_t}^2})\approx 2(1-\hat \rho)
+$$
+
+![](http://i1.fuimg.com/611786/0934ffbcf55a4c32.png)
+
+
+根据显著性水平$\alpha$，样本数据的个数n,和自变量的个数k查找由Durbin-Watson建立的D.W.表，得到下限值dL和上限值dU。
+
 
 ```{r,echo=TRUE}
-library(car)
+states<-as.data.frame(state.x77[,c("Murder","Population","Illiteracy","Income","Frost")])
+lm.fit3.1.3 <- lm(Murder ~ ., data = states)
 durbinWatsonTest(lm.fit3.1.3)
 ```
 
-**结果解读：**P>0.05,不能拒绝原假设，即不存在自相关性
+p值大于0.05,不存在自相关,如果存在自相关可以通过差分法解决
 
-###3.3 线性性
-```{r,echo=TRUE}
-crPlots(lm.fit3.1.3) #具体可以再探究，跟标准诊断图形的左上图是吻合的，都表示满足线性性
-```
 
-**结果解读：**输出的是偏残差图，这边四幅图都显示拟合曲线和平滑拟合曲线都呈线性，表明满足线性性假设
+#### 4. 离群点
 
-###3.4 正态性
-```{r,echo=TRUE,warning=FALSE}
-#car包提供大量函数，大大增强拟合和评价回归模型的能力
-qqPlot(lm.fit3.1.3, label=row.names(states),id.method="identify",simulate = TRUE, main = "学生化残差的Q-Q图")
-```
 
-**结果解读：**图中的点均散落在呈45°角的直线附近，且都落在置信区间内，说明较好地满足了正态性假设。但是发现存在一个异常值点（左上角），它是一个很大的正残差值（真实值-预测值），说明有数据被低估了。
+离群点是指yi远离模型预测值的点。红点20是一个典型的离群点。一般认为学生化残差的绝对值大于3的观测点可能是离群点。
+
+![](http://i2.tiimg.com/611786/6aad196858576960.png)  
 
 ```{r,echo=TRUE}
-#自己编写一个函数用来画学生化残差图
-rsdplot <- function(fit, nbreaks = 10)
-{
-	z <- rstudent(fit)
-    hist(z, breaks = nbreaks, freq = FALSE, xlab = "studentized residual", main = "distribution of errors")
-    rug(jitter(z), col = "brown")
-    curve(dnorm(x, mean = mean(z), sd = sd(z)), add = TRUE, col = "blue", lwd = 2)
-    lines(density(z)$x, density(z)$y, col = "red", lwd = 2, lty = 2)
-    legend("topright", legend = c("normal curve", "kernel density cuve"), lty = c(1,2), col = c("blue", "red"), cex = 0.7)
-}
-rsdplot(lm.fit3.1.3)
-
+lm.fit2.2.2 <- lm(medv ~ ., data = Boston)
+outlierTest(lm.fit2.2.2)
 ```
+#### 5. 高杠杆
 
-**结果解读：**除了一个很明显的离群点 ，其他误差值都很好地服从了正态分布，而且密度曲线跟正态分布曲线很接近。此外，这个柱状图和密度测量分布图能够很方便地看出分布的斜度（比Q-Q图容易）
+高杠杆点是是指观测点xi异常的点。红点41具有高杠杆值是一个典型的高杠杆点。从中间的图可以看出，红点的X1,X2都不异常，但它落在数据主体之外，也是高杠杆值。
+![](http://i2.tiimg.com/611786/6a138628906870c1.png)
 
-###3.5 同方差性
-
-**方法1 图形法**
-
-```{r,echo=TRUE}
-spreadLevelPlot(lm.fit3.1.3)
-```
-
-**结果解读：**“残差拟合值图”显示，散点在水平的残差拟合曲线周围呈水平随机分布，说明满足同方差性假设。
-
-**方法2 假设检验法**
-
-```{r,echo=TRUE}
-ncvTest(lm.fit3.1.3)
-```
-
-**结果解读：**p=0.19,说明不显著，即满足原假设，也就是说，不存在异方差性
-
-###3.6 多重共线性
-
-**非正规方法：**
-
-方法1：增或减一个变量，回归系数大变
-
-方法2：对重要自变量进行回归系数的单项检验，结果不显著
-
-方法3：回归系数的代数符号与经验值相反
-
-方法4：相关阵中两两自变量的相关系数较大
-
-方法5：重要回归系数的置信区间较大
-
-**正规方法：**计算方差膨胀因子（局限性：不能区别几个同时多重共线性）
-
-```{r,echo=TRUE}
-sqrt(vif(lm.fit3.1.3)) > 2 #先计算方差膨胀因子，再与2比较大小
-```
-
-**结果解读：**TRUE表明存在多重共线性，FALSE表明不存在多重共线性，所以可以看到这边不存在多重共线性
-
----
-
-##4 判断是否存在异常值点
-
-###4.1 三种点总的判断
-```{r,echo=TRUE}
-influencePlot(lm.fit3.1.3,id.method="identify",main="influence plot",sub="circle size is proportional to cook's distance")
-```
-
-**结果解读：**纵坐标看离群点(>2或<-2),横坐标看高杠杆值点（>0.2或0.3），圈圈大小看对模型参数估计的影响大小，太大的可能是强影响点。从图中看到三种点均有存在
-
-###4.2 离群点
-
-方法1：通过Q-Q图，落在置信区间外的是离群点
-
-方法2：标准化残差值>2或<-2的可能是离群点
-
-**方法3：**
-
-```{r,echo=TRUE}
-#下面这个函数，是通过！单个！最大（—or+）残差值的显著性来判断是否具有离群点，如果不显著，就说明没有离群点，如果显著，必须删除这个离群点，然后再次使用这个函数用来判断是不是还有其他离群点的存在
-outlierTest(lm.fit3.1.3)
-```
-
-###4.3 高杠杆值点
+对于一元线性回归，杠杆统计量为:$h_i=\frac{1}{n}+\frac{(x_i-\bar x)^2}{\sum\limits_{i=1}^n(x_i-\bar x)^2}$,当观测点的杠杆值大大超过$\frac{p+1}{n}$,怀疑该点为高杠杆点
 
 ```{r,echo=TRUE,warning=FALSE}
 hatplot <- function(fit)
@@ -258,85 +464,79 @@ hatplot <- function(fit)
     p <- length(coefficients(fit)) #p是参数个数
     n <- length(fitted(fit))#n是样本量
     plot(hatvalues(fit), main = "Index Plot of Hat Values")
-    abline(h = c(2, 3) * p / n, col = "red", lty = 2)
+    abline(h = c(2, 3) * (p + 1) / n, col = "red", lty = 2)
     identify(1:n, hatvalues(fit), names(hatvalues(fit)))#定位函数
 }
-hatplot(lm.fit3.1.3)
+hatplot(lm.fit2.2.2)
 ```
 
-**结果解读：**只需要看图，水平线标注的是帽子均值2倍和3倍的位置，一般认为超过帽子均值2倍和3倍的位置的点是高杠杆值点。
+#### 6. 共线性
 
-###4.4 强影响值点
 
-**方法1：计算Cook距离并绘图**（Cook's D图）（该图对于找强影响点很有用，但是不能反映这些点是怎么影响模型的）((这个图可以直接显示出来强影响点的名字))
+共线性是指两个或更多的预测变量高度相关。
 
-```{r,echo=TRUE}
-cutoff <- 4 / (nrow(states) - (length(lm.fit3.1.3$coefficients) - 1) - 1)
-plot(lm.fit3.1.3, which = 4, cook.levels = cutoff)#？which=4表示前面的第四张图，但是第4张图并不是这样的(而且第1，2，3张图是一样的)#这里好像有点疑问
-abline(h = cutoff, lty = 2, col = "red")
+
+![](http://i2.tiimg.com/611786/08c79f3988a74148.png)
+
+
+
+
+
+![](http://i2.tiimg.com/611786/b17c772997adf085.png)
+
+* 可以通过预测变量的相关系数矩阵，来判断变量间是否存在共线性。如果三个或更多变量之间存在共线性，则称为多重共线性。
+
+* 评估多重共线性的方法是计算方差膨胀因子。$VIF(\hat \beta_j)=\frac{1}{1-R_{x_j|x_{-j}}^2}$ $R^2_{x_j|x_{-j}}$是$x_j$对所有预测变量回归的$R^2$。
+一般当VIF的超过5或10就表示有共线性问题
+
+* 共线性的解决方案有两种，剔除一个问题变量或者将共线变量组合成一个单一的预测变量。
+
+
+
+
+
+
+```{r,echo = TRUE}
+library(MASS)
+lm.fit2.2.3.1 <- lm(medv ~ . - age-rad-tax, data = Boston)
+vif(lm.fit2.2.3) 
+vif(lm.fit2.2.3.1)
 ```
 
-**结果解读：**从图中可以看到有三个强影响点（已被标出名字）
 
-**方法2：绘制变量添加图**
 
-```{r,echo=TRUE}
-avPlots(lm.fit3.1.3,id.method="identify")
-```
+## 3.6练习题
 
-**结果解读：**变量添加图是，预测变量$X_k$与其余k-1个预测变量拟合的残差值（X轴）与响应变量Y与其余k-1个预测变量拟合的残差值（Y轴）画出的散点关系图，还给出了平滑拟合曲线。图中的直线表示相应预测变量的实际回归系数。如左下和右下两个图，直线为水平在O处，说明这两个预测变量是不显著的，最终的回归模型中，这两个变量前的系数应该是0。
 
----
+使用Auto数据集进行多元线性回归。
 
-##5 问题的解决
 
-###5.1 违反线性性假设
-```{r,echo=TRUE,warning=FALSE}
-boxTidwell(Murder ~ Population + Illiteracy, data = states)
-```
++ 作出数据集中的所有变量的散点图矩阵。
 
-**结果解读：**结果表明使用变换，可以改善线性关系，但是由于计分检验的P值都>0.05，所以不能拒绝原假设，意味着不需要进行该变量变换
 
-###5.2 违反正态性假设
-```{r,echo=TRUE,warning=FALSE}
-summary(powerTransform(states$Murder))
-```
++ 用cor()函数计算变量之间的相关系数矩阵。需排除定性变量 name
 
-**结果解读：**结果表明，用murder^0.6来正态化变量murder，但是发现不能拒绝lambda=1的假设，意味着，不需要进行该变量变换
 
-###5.3 违反同方差性
++ 使用1m ()函数进行多元线性回归，用除了 name 之外的所有变量作为预测变量， mpg作为响应变量。用 summary ( )函数输出结果并分析所得结果。
 
-前面在<更好的方法（分散）>里面，检验同方差性的时候已经提到了
-
-###5.4 存在多重共线性
-
-方法1：删除存在多重共线性的变量（把<更好的方法（分散）>里面，检测多重共线性，出现TRUE的变量删除）（（局限性：得不到关于被剔除变量的直接信息，且模型中剩余变量回归系数大小受模型外的相关变量的影响））
-
-方法2：在多项式回归模型中，把任意给定的自变量表示成与其均值离差的形式，以大大降低一阶，二阶和更高阶的项之间的多重共线性
-
-方法3：岭回归（专门处理多重共线性）((下次再讲))
-
-方法4：主成分回归（参考《应用回归分析》何晓群，刘文卿）、因子分析这些
-
-###5.5 存在异常值点
-
-如果能肯定地说明一个异常观察值是很大的测量误差的结果，剔除是合适的
-
-如果异常观察值是准确的，他可能意味着模型的失败（遗漏重要自变量或选择了不正确的函数形式）
-
-如果异常观察值是准确的，但找不到对于他的解释，那么可以抑制他的影响（而不是剔除）（（比如使用最小绝对离差法：通过极小化绝对离差之和来估计回归系数。这种方法具有对 异常数据和不合适模型并不敏感的性质，除了这个方法，还有其他稳健的方法可以参考《统计稳健性：关于当代应用问题的看法》罗伯特.V.霍格））
+例如:
 
 
 
----
++ 预测变量和响应变量之间有关系吗?
 
-##6 补充（待补充）
 
-###6.1 库克距离（待补充）
++ 哪个预测变量与相应变量在统计上具有显著关系?
 
-###6.2 帽子矩阵（待补充）
 
-###6.3 异常值点的区分（待补充）
++ year (车龄)变量的系数说明什么?
 
----
+
++ plot ()函数生成线性回归拟合的诊断图。分析拟合中的问题。残差图表明有异常大的离群点吗?杠杆图识别出了有异常高杠杆作用的点吗?
+
+
++ 使用符号*和符号:来进行有交互作用的线性回归模型拟合。是否存在统计显著的交互作用?
+
+
++ 对预测变量尝试不同的变换，如 $logX，\sqrt{X}和X^2$并分析结果。
 
